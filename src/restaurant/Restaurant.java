@@ -6,7 +6,7 @@ package restaurante;
 
 /**
  *
- * @author Aprendiz
+ * @author JUAN ESTEBAN
  */
 public class Restaurante {
 
