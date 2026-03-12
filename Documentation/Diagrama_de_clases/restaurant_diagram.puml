@@ -1,0 +1,421 @@
+@startuml Sistema_Restaurante_EN
+hide circle
+skinparam classAttributeIconSize 0
+skinparam backgroundColor #FFFFFF
+skinparam class {
+  BackgroundColor #FFFFFF
+  BorderColor #64748B
+  FontColor #1e293b
+  HeaderBackgroundColor #E2E8F0
+}
+skinparam interface {
+  BackgroundColor #F8FAFC
+  BorderColor #475569
+  FontColor #334155
+}
+skinparam enum {
+  BackgroundColor #F1F5F9
+  BorderColor #94A3B8
+  FontColor #475569
+}
+skinparam note {
+  BackgroundColor #F8FAFC
+  BorderColor #94A3B8
+  FontColor #1e293b
+}
+skinparam arrow {
+  Color #475569
+}
+skinparam stereotypeCBackgroundColor #E2E8F0
+skinparam stereotypeIBackgroundColor #F1F5F9
+
+' ─────────────────────────────────────────
+' ENUMERATIONS
+' ─────────────────────────────────────────
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  PAID
+  DELIVERED
+}
+
+enum LogLevel {
+  INFO
+  WARNING
+  ERROR
+  DEBUG
+}
+
+enum InvoiceType {
+  PHYSICAL
+  DIGITAL
+}
+
+' ─────────────────────────────────────────
+' DOMAIN ENTITIES
+' ─────────────────────────────────────────
+
+class Product {
+  - productId : String
+  - name : String
+  - description : String
+  - price : double
+  - category : String
+  + getPrice() : double
+  + getName() : String
+  + toString() : String
+}
+
+class OrderItem {
+  - product : Product
+  - quantity : int
+  - unitPrice : double
+  - subtotal : double
+  + getSubtotal() : double
+  + getProduct() : Product
+}
+
+class Order {
+  - orderId : String
+  - items : List<OrderItem>
+  - status : OrderStatus
+  - createdAt : DateTime
+  - total : double
+  + addItem(item : OrderItem) : void
+  + removeItem(id : String) : void
+  + confirm() : void
+  + cancel() : void
+  + calculateTotal() : double
+  + getStatus() : OrderStatus
+}
+
+class Invoice {
+  - invoiceId : String
+  - order : Order
+  - type : InvoiceType
+  - issuedAt : DateTime
+  - total : double
+  + generate() : void
+  + print() : void
+}
+
+class InventoryItem {
+  - product : Product
+  - quantity : int
+  - minStock : int
+  - lastUpdated : DateTime
+  + isLowStock() : boolean
+  + decrease(qty : int) : void
+  + increase(qty : int) : void
+}
+
+class LogEntry {
+  - timestamp : DateTime
+  - level : LogLevel
+  - message : String
+  - source : String
+  + toString() : String
+}
+
+' ─────────────────────────────────────────
+' SINGLETONS
+' ─────────────────────────────────────────
+
+class Logger <<Singleton>> {
+  - {static} instance : Logger
+  - logs : List<LogEntry>
+  - outputFile : String
+  - level : LogLevel
+  - Logger()
+  + {static} getInstance() : Logger
+  + log(msg : String, lvl : LogLevel) : void
+  + info(msg : String) : void
+  + warn(msg : String) : void
+  + error(msg : String) : void
+  + getLogs() : List<LogEntry>
+  + printAll() : void
+  + clearLogs() : void
+  + exportToFile() : void
+}
+
+class OrderManager <<Singleton>> {
+  - {static} instance : OrderManager
+  - orders : Map<String, Order>
+  - invoker : CommandInvoker
+  - currentOrder : Order
+  - OrderManager()
+  + {static} getInstance() : OrderManager
+  + createOrder() : Order
+  + getOrder(id : String) : Order
+  + getAllOrders() : List<Order>
+  + execute(cmd : ICommand) : void
+  + undoLast() : void
+}
+
+class InventoryManager <<Singleton>> {
+  - {static} instance : InventoryManager
+  - stock : Map<String, InventoryItem>
+  - InventoryManager()
+  + {static} getInstance() : InventoryManager
+  + addProduct(p : Product, qty : int) : void
+  + removeProduct(id : String) : void
+  + updateStock(id : String, qty : int) : void
+  + getStock(id : String) : int
+  + isAvailable(id : String, qty : int) : boolean
+  + listAll() : List<InventoryItem>
+}
+
+class CatalogManager <<Singleton>> {
+  - {static} instance : CatalogManager
+  - catalog : Map<String, Product>
+  - observers : List<IObserver>
+  - CatalogManager()
+  + {static} getInstance() : CatalogManager
+  + addProduct(p : Product) : void
+  + removeProduct(id : String) : void
+  + updateProduct(id : String, p : Product) : void
+  + getProduct(id : String) : Product
+  + listAll() : List<Product>
+  + addObserver(o : IObserver) : void
+  + removeObserver(o : IObserver) : void
+  + notifyObservers() : void
+}
+
+' ─────────────────────────────────────────
+' COMMAND PATTERN
+' ─────────────────────────────────────────
+
+interface ICommand {
+  + execute() : void
+  + undo() : void
+  + getDescription() : String
+}
+
+class CommandInvoker {
+  - history : Stack<ICommand>
+  - pending : Queue<ICommand>
+  + executeCommand(cmd : ICommand) : void
+  + undoLast() : void
+  + getHistory() : List<ICommand>
+}
+
+class CreateOrderCommand {
+  - orderManager : OrderManager
+  - createdOrder : Order
+  + execute() : void
+  + undo() : void
+  + getDescription() : String
+}
+
+class AddProductCommand {
+  - order : Order
+  - product : Product
+  - quantity : int
+  + execute() : void
+  + undo() : void
+  + getDescription() : String
+}
+
+class RemoveProductCommand {
+  - order : Order
+  - productId : String
+  - removedItem : OrderItem
+  + execute() : void
+  + undo() : void
+  + getDescription() : String
+}
+
+class ConfirmOrderCommand {
+  - order : Order
+  - previousStatus : OrderStatus
+  + execute() : void
+  + undo() : void
+  + getDescription() : String
+}
+
+class CancelOrderCommand {
+  - order : Order
+  - previousStatus : OrderStatus
+  + execute() : void
+  + undo() : void
+  + getDescription() : String
+}
+
+class UpdateOrderCommand {
+  - order : Order
+  - newItems : List<OrderItem>
+  - previousItems : List<OrderItem>
+  + execute() : void
+  + undo() : void
+  + getDescription() : String
+}
+
+class PayOrderCommand {
+  - order : Order
+  - paymentStrategy : IPaymentStrategy
+  - invoice : Invoice
+  + execute() : void
+  + undo() : void
+  + getDescription() : String
+}
+
+' ─────────────────────────────────────────
+' STRATEGY PATTERN
+' ─────────────────────────────────────────
+
+interface IPaymentStrategy {
+  + pay(amount : double) : boolean
+  + getMethodName() : String
+  + validate(amount : double) : boolean
+  + generateReceipt() : String
+}
+
+class PaymentContext {
+  - strategy : IPaymentStrategy
+  - order : Order
+  + setStrategy(s : IPaymentStrategy) : void
+  + executePayment() : boolean
+  + getReceipt() : String
+}
+
+class CashPayment {
+  - amountReceived : double
+  - change : double
+  + pay(amount : double) : boolean
+  + getMethodName() : String
+  + validate(amount : double) : boolean
+  + generateReceipt() : String
+  + calculateChange() : double
+}
+
+class CardPayment {
+  - cardNumber : String
+  - cardType : String
+  - transactionId : String
+  + pay(amount : double) : boolean
+  + getMethodName() : String
+  + validate(amount : double) : boolean
+  + generateReceipt() : String
+  - processTransaction() : boolean
+}
+
+class TransferPayment {
+  - bankAccount : String
+  - referenceCode : String
+  - bankName : String
+  + pay(amount : double) : boolean
+  + getMethodName() : String
+  + validate(amount : double) : boolean
+  + generateReceipt() : String
+  - verifyTransfer() : boolean
+}
+
+' ─────────────────────────────────────────
+' OBSERVER PATTERN
+' ─────────────────────────────────────────
+
+interface IObserver {
+  + update(event : String) : void
+}
+
+interface IObservable {
+  + addObserver(o : IObserver) : void
+  + removeObserver(o : IObserver) : void
+  + notifyObservers() : void
+}
+
+class LoggerObserver {
+  - logger : Logger
+  + update(event : String) : void
+}
+
+class InventoryObserver {
+  - inventoryManager : InventoryManager
+  + update(event : String) : void
+  - syncStock(productId : String) : void
+}
+
+' ─────────────────────────────────────────
+' MENU
+' ─────────────────────────────────────────
+
+class Menu {
+  + start() : void
+  + showMainMenu() : void
+  + showOrderMenu() : void
+  + showPaymentMenu() : void
+  + showInventoryMenu() : void
+  + showCatalogMenu() : void
+  + showLogs() : void
+  - readInput() : String
+}
+
+' ─────────────────────────────────────────
+' RELATIONSHIPS
+' ─────────────────────────────────────────
+
+' Domain
+Order "1" *-- "1..*" OrderItem
+OrderItem "1" --> "1" Product
+Invoice "1" --> "1" Order
+Invoice --> InvoiceType
+Order --> OrderStatus
+InventoryItem "1" --> "1" Product
+
+' Logger
+Logger "1" *-- "*" LogEntry
+LogEntry --> LogLevel
+
+' Singletons use Logger
+OrderManager ..> Logger : uses
+InventoryManager ..> Logger : uses
+CatalogManager ..> Logger : uses
+
+' OrderManager
+OrderManager "1" *-- "1" CommandInvoker
+OrderManager "1" *-- "*" Order
+
+' Command Pattern
+ICommand <|.. CreateOrderCommand
+ICommand <|.. AddProductCommand
+ICommand <|.. RemoveProductCommand
+ICommand <|.. ConfirmOrderCommand
+ICommand <|.. CancelOrderCommand
+ICommand <|.. UpdateOrderCommand
+ICommand <|.. PayOrderCommand
+
+CommandInvoker --> ICommand : executes
+
+CreateOrderCommand ..> OrderManager
+AddProductCommand --> Order
+RemoveProductCommand --> Order
+ConfirmOrderCommand --> Order
+CancelOrderCommand --> Order
+UpdateOrderCommand --> Order
+PayOrderCommand --> Order
+PayOrderCommand --> PaymentContext
+PayOrderCommand --> Invoice : generates
+
+' Strategy Pattern
+IPaymentStrategy <|.. CashPayment
+IPaymentStrategy <|.. CardPayment
+IPaymentStrategy <|.. TransferPayment
+PaymentContext "1" o-- "1" IPaymentStrategy
+
+' Observer Pattern
+IObservable <|.. CatalogManager
+IObserver <|.. LoggerObserver
+IObserver <|.. InventoryObserver
+CatalogManager "1" o-- "*" IObserver
+LoggerObserver ..> Logger
+InventoryObserver ..> InventoryManager
+
+' Menu
+Menu ..> OrderManager
+Menu ..> InventoryManager
+Menu ..> CatalogManager
+Menu ..> Logger
+
+@enduml
