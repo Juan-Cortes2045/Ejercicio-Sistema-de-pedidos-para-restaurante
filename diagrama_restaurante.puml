@@ -1,0 +1,421 @@
+@startuml Sistema_Restaurante_ES
+hide circle
+skinparam classAttributeIconSize 0
+skinparam backgroundColor #FFFFFF
+skinparam class {
+  BackgroundColor #FFFFFF
+  BorderColor #64748B
+  FontColor #1e293b
+  HeaderBackgroundColor #E2E8F0
+}
+skinparam interface {
+  BackgroundColor #F8FAFC
+  BorderColor #475569
+  FontColor #334155
+}
+skinparam enum {
+  BackgroundColor #F1F5F9
+  BorderColor #94A3B8
+  FontColor #475569
+}
+skinparam note {
+  BackgroundColor #F8FAFC
+  BorderColor #94A3B8
+  FontColor #1e293b
+}
+skinparam arrow {
+  Color #475569
+}
+skinparam stereotypeCBackgroundColor #E2E8F0
+skinparam stereotypeIBackgroundColor #F1F5F9
+
+' ─────────────────────────────────────────
+' ENUMERACIONES
+' ─────────────────────────────────────────
+
+enum EstadoPedido {
+  PENDIENTE
+  CONFIRMADO
+  CANCELADO
+  PAGADO
+  ENTREGADO
+}
+
+enum NivelLog {
+  INFO
+  ADVERTENCIA
+  ERROR
+  DEPURACION
+}
+
+enum TipoFactura {
+  FISICA
+  DIGITAL
+}
+
+' ─────────────────────────────────────────
+' ENTIDADES DEL DOMINIO
+' ─────────────────────────────────────────
+
+class Producto {
+  - idProducto : String
+  - nombre : String
+  - descripcion : String
+  - precio : double
+  - categoria : String
+  + getPrecio() : double
+  + getNombre() : String
+  + toString() : String
+}
+
+class ItemPedido {
+  - producto : Producto
+  - cantidad : int
+  - precioUnitario : double
+  - subtotal : double
+  + getSubtotal() : double
+  + getProducto() : Producto
+}
+
+class Pedido {
+  - idPedido : String
+  - items : List<ItemPedido>
+  - estado : EstadoPedido
+  - creadoEn : DateTime
+  - total : double
+  + agregarItem(item : ItemPedido) : void
+  + quitarItem(id : String) : void
+  + confirmar() : void
+  + cancelar() : void
+  + calcularTotal() : double
+  + getEstado() : EstadoPedido
+}
+
+class Factura {
+  - idFactura : String
+  - pedido : Pedido
+  - tipo : TipoFactura
+  - emitidaEn : DateTime
+  - total : double
+  + generar() : void
+  + imprimir() : void
+}
+
+class ItemInventario {
+  - producto : Producto
+  - cantidad : int
+  - stockMinimo : int
+  - ultimaActualizacion : DateTime
+  + esBajoStock() : boolean
+  + disminuir(cant : int) : void
+  + aumentar(cant : int) : void
+}
+
+class EntradaLog {
+  - timestamp : DateTime
+  - nivel : NivelLog
+  - mensaje : String
+  - origen : String
+  + toString() : String
+}
+
+' ─────────────────────────────────────────
+' SINGLETONS
+' ─────────────────────────────────────────
+
+class Logger <<Singleton>> {
+  - {static} instancia : Logger
+  - logs : List<EntradaLog>
+  - archivoSalida : String
+  - nivel : NivelLog
+  - Logger()
+  + {static} getInstancia() : Logger
+  + registrar(msg : String, niv : NivelLog) : void
+  + info(msg : String) : void
+  + advertencia(msg : String) : void
+  + error(msg : String) : void
+  + getLogs() : List<EntradaLog>
+  + imprimirTodos() : void
+  + limpiarLogs() : void
+  + exportarArchivo() : void
+}
+
+class GestorPedidos <<Singleton>> {
+  - {static} instancia : GestorPedidos
+  - pedidos : Map<String, Pedido>
+  - invocador : InvocadorComando
+  - pedidoActual : Pedido
+  - GestorPedidos()
+  + {static} getInstancia() : GestorPedidos
+  + crearPedido() : Pedido
+  + getPedido(id : String) : Pedido
+  + getTodosPedidos() : List<Pedido>
+  + ejecutar(cmd : IComando) : void
+  + deshacerUltimo() : void
+}
+
+class GestorInventario <<Singleton>> {
+  - {static} instancia : GestorInventario
+  - stock : Map<String, ItemInventario>
+  - GestorInventario()
+  + {static} getInstancia() : GestorInventario
+  + agregarProducto(p : Producto, cant : int) : void
+  + eliminarProducto(id : String) : void
+  + actualizarStock(id : String, cant : int) : void
+  + getStock(id : String) : int
+  + estaDisponible(id : String, cant : int) : boolean
+  + listarTodos() : List<ItemInventario>
+}
+
+class GestorCatalogo <<Singleton>> {
+  - {static} instancia : GestorCatalogo
+  - catalogo : Map<String, Producto>
+  - observadores : List<IObservador>
+  - GestorCatalogo()
+  + {static} getInstancia() : GestorCatalogo
+  + agregarProducto(p : Producto) : void
+  + eliminarProducto(id : String) : void
+  + actualizarProducto(id : String, p : Producto) : void
+  + getProducto(id : String) : Producto
+  + listarTodos() : List<Producto>
+  + agregarObservador(o : IObservador) : void
+  + eliminarObservador(o : IObservador) : void
+  + notificarObservadores() : void
+}
+
+' ─────────────────────────────────────────
+' PATRON COMMAND
+' ─────────────────────────────────────────
+
+interface IComando {
+  + ejecutar() : void
+  + deshacer() : void
+  + getDescripcion() : String
+}
+
+class InvocadorComando {
+  - historial : Stack<IComando>
+  - pendientes : Queue<IComando>
+  + ejecutarComando(cmd : IComando) : void
+  + deshacerUltimo() : void
+  + getHistorial() : List<IComando>
+}
+
+class ComandoCrearPedido {
+  - gestorPedidos : GestorPedidos
+  - pedidoCreado : Pedido
+  + ejecutar() : void
+  + deshacer() : void
+  + getDescripcion() : String
+}
+
+class ComandoAgregarProducto {
+  - pedido : Pedido
+  - producto : Producto
+  - cantidad : int
+  + ejecutar() : void
+  + deshacer() : void
+  + getDescripcion() : String
+}
+
+class ComandoQuitarProducto {
+  - pedido : Pedido
+  - idProducto : String
+  - itemEliminado : ItemPedido
+  + ejecutar() : void
+  + deshacer() : void
+  + getDescripcion() : String
+}
+
+class ComandoConfirmarPedido {
+  - pedido : Pedido
+  - estadoAnterior : EstadoPedido
+  + ejecutar() : void
+  + deshacer() : void
+  + getDescripcion() : String
+}
+
+class ComandoCancelarPedido {
+  - pedido : Pedido
+  - estadoAnterior : EstadoPedido
+  + ejecutar() : void
+  + deshacer() : void
+  + getDescripcion() : String
+}
+
+class ComandoActualizarPedido {
+  - pedido : Pedido
+  - itemsNuevos : List<ItemPedido>
+  - itemsAnteriores : List<ItemPedido>
+  + ejecutar() : void
+  + deshacer() : void
+  + getDescripcion() : String
+}
+
+class ComandoPagarPedido {
+  - pedido : Pedido
+  - estrategiaPago : IEstrategiaPago
+  - factura : Factura
+  + ejecutar() : void
+  + deshacer() : void
+  + getDescripcion() : String
+}
+
+' ─────────────────────────────────────────
+' PATRON STRATEGY
+' ─────────────────────────────────────────
+
+interface IEstrategiaPago {
+  + pagar(monto : double) : boolean
+  + getNombreMetodo() : String
+  + validar(monto : double) : boolean
+  + generarRecibo() : String
+}
+
+class ContextoPago {
+  - estrategia : IEstrategiaPago
+  - pedido : Pedido
+  + setEstrategia(e : IEstrategiaPago) : void
+  + ejecutarPago() : boolean
+  + getRecibo() : String
+}
+
+class PagoEfectivo {
+  - montoRecibido : double
+  - cambio : double
+  + pagar(monto : double) : boolean
+  + getNombreMetodo() : String
+  + validar(monto : double) : boolean
+  + generarRecibo() : String
+  + calcularCambio() : double
+}
+
+class PagoTarjeta {
+  - numeroTarjeta : String
+  - tipoTarjeta : String
+  - idTransaccion : String
+  + pagar(monto : double) : boolean
+  + getNombreMetodo() : String
+  + validar(monto : double) : boolean
+  + generarRecibo() : String
+  - procesarTransaccion() : boolean
+}
+
+class PagoTransferencia {
+  - cuentaBancaria : String
+  - codigoReferencia : String
+  - nombreBanco : String
+  + pagar(monto : double) : boolean
+  + getNombreMetodo() : String
+  + validar(monto : double) : boolean
+  + generarRecibo() : String
+  - verificarTransferencia() : boolean
+}
+
+' ─────────────────────────────────────────
+' PATRON OBSERVER
+' ─────────────────────────────────────────
+
+interface IObservador {
+  + actualizar(evento : String) : void
+}
+
+interface IObservable {
+  + agregarObservador(o : IObservador) : void
+  + eliminarObservador(o : IObservador) : void
+  + notificarObservadores() : void
+}
+
+class ObservadorLogger {
+  - logger : Logger
+  + actualizar(evento : String) : void
+}
+
+class ObservadorInventario {
+  - gestorInventario : GestorInventario
+  + actualizar(evento : String) : void
+  - sincronizarStock(idProducto : String) : void
+}
+
+' ─────────────────────────────────────────
+' MENU
+' ─────────────────────────────────────────
+
+class Menu {
+  + iniciar() : void
+  + mostrarMenuPrincipal() : void
+  + mostrarMenuPedidos() : void
+  + mostrarMenuPagos() : void
+  + mostrarMenuInventario() : void
+  + mostrarMenuCatalogo() : void
+  + mostrarLogs() : void
+  - leerEntrada() : String
+}
+
+' ─────────────────────────────────────────
+' RELACIONES
+' ─────────────────────────────────────────
+
+' Dominio
+Pedido "1" *-- "1..*" ItemPedido
+ItemPedido "1" --> "1" Producto
+Factura "1" --> "1" Pedido
+Factura --> TipoFactura
+Pedido --> EstadoPedido
+ItemInventario "1" --> "1" Producto
+
+' Logger
+Logger "1" *-- "*" EntradaLog
+EntradaLog --> NivelLog
+
+' Singletons usan Logger
+GestorPedidos ..> Logger : usa
+GestorInventario ..> Logger : usa
+GestorCatalogo ..> Logger : usa
+
+' GestorPedidos
+GestorPedidos "1" *-- "1" InvocadorComando
+GestorPedidos "1" *-- "*" Pedido
+
+' Command Pattern
+IComando <|.. ComandoCrearPedido
+IComando <|.. ComandoAgregarProducto
+IComando <|.. ComandoQuitarProducto
+IComando <|.. ComandoConfirmarPedido
+IComando <|.. ComandoCancelarPedido
+IComando <|.. ComandoActualizarPedido
+IComando <|.. ComandoPagarPedido
+
+InvocadorComando --> IComando : ejecuta
+
+ComandoCrearPedido ..> GestorPedidos
+ComandoAgregarProducto --> Pedido
+ComandoQuitarProducto --> Pedido
+ComandoConfirmarPedido --> Pedido
+ComandoCancelarPedido --> Pedido
+ComandoActualizarPedido --> Pedido
+ComandoPagarPedido --> Pedido
+ComandoPagarPedido --> ContextoPago
+ComandoPagarPedido --> Factura : genera
+
+' Strategy Pattern
+IEstrategiaPago <|.. PagoEfectivo
+IEstrategiaPago <|.. PagoTarjeta
+IEstrategiaPago <|.. PagoTransferencia
+ContextoPago "1" o-- "1" IEstrategiaPago
+
+' Observer Pattern
+IObservable <|.. GestorCatalogo
+IObservador <|.. ObservadorLogger
+IObservador <|.. ObservadorInventario
+GestorCatalogo "1" o-- "*" IObservador
+ObservadorLogger ..> Logger
+ObservadorInventario ..> GestorInventario
+
+' Menu
+Menu ..> GestorPedidos
+Menu ..> GestorInventario
+Menu ..> GestorCatalogo
+Menu ..> Logger
+
+@enduml
