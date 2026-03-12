@@ -1,0 +1,205 @@
+' DIAGRAMA GENERAL
+
+@startuml
+left to right direction
+
+actor Cliente
+actor Administrador
+actor "Sistema de Pago"
+
+rectangle "Sistema de Gestión de Pedidos" {
+
+' PEDIDOS
+
+(Crear pedido)
+(Agregar producto al pedido)
+(Quitar producto del pedido)
+(Actualizar pedido)
+(Confirmar pedido)
+(Cancelar pedido)
+
+Cliente -- (Crear pedido)
+Cliente -- (Confirmar pedido)
+Cliente -- (Cancelar pedido)
+
+(Crear pedido) ..> (Agregar producto al pedido) : <<include>>
+(Crear pedido) ..> (Quitar producto del pedido) : <<extend>>
+(Crear pedido) ..> (Actualizar pedido) : <<extend>>
+
+(Confirmar pedido) ..> (Pagar pedido) : <<include>>
+
+
+' PAGOS
+
+(Pagar pedido)
+(Procesar pago)
+(Generar factura)
+
+Cliente -- (Pagar pedido)
+
+(Pagar pedido) ..> (Procesar pago) : <<include>>
+
+"Sistema de Pago" -- (Procesar pago)
+
+(Procesar pago) ..> (Generar factura) : <<include>>
+
+
+' INVENTARIO
+
+(Añadir producto al inventario)
+(Eliminar producto del inventario)
+(Actualizar stock)
+
+Administrador -- (Añadir producto al inventario)
+Administrador -- (Eliminar producto del inventario)
+Administrador -- (Actualizar stock)
+
+
+' CATALOGO
+
+(Añadir producto al catalogo)
+(Eliminar producto del catalogo)
+(Actualizar producto del catalogo)
+
+Administrador -- (Añadir producto al catalogo)
+Administrador -- (Eliminar producto del catalogo)
+Administrador -- (Actualizar producto del catalogo)
+
+}
+
+@enduml
+
+
+
+
+' DIAGRAMAS INDIVIDUALES
+
+
+' GESTION DE PEDIDOS
+@startuml
+left to right direction
+
+actor Cliente
+
+rectangle "Modulo Gestion de Pedidos" {
+
+(Realizar pedido)
+
+(Crear pedido)
+(Agregar producto)
+(Quitar producto)
+(Actualizar pedido)
+(Confirmar pedido)
+(Cancelar pedido)
+
+Cliente -- (Realizar pedido)
+
+(Realizar pedido) ..> (Crear pedido) : <<include>>
+(Realizar pedido) ..> (Agregar producto) : <<include>>
+(Realizar pedido) ..> (Confirmar pedido) : <<include>>
+
+(Actualizar pedido) ..> (Agregar producto) : <<extend>>
+(Actualizar pedido) ..> (Quitar producto) : <<extend>>
+
+(Cancelar pedido) ..> (Realizar pedido) : <<extend>>
+
+}
+
+@enduml
+
+
+
+' GESTION DE INVENTARIO
+@startuml
+left to right direction
+
+actor Administrador
+
+rectangle "Modulo Gestion de Inventario" {
+
+(Añadir producto al inventario)
+(Eliminar producto del inventario)
+(Actualizar stock)
+
+Administrador -- (Añadir producto al inventario)
+Administrador -- (Eliminar producto del inventario)
+Administrador -- (Actualizar stock)
+
+}
+
+@enduml
+
+
+
+' GESTION DE CATALOGO
+@startuml
+left to right direction
+
+actor Administrador
+
+rectangle "Modulo Gestion de Catalogo" {
+
+(Añadir producto)
+(Eliminar producto)
+(Actualizar producto)
+
+Administrador -- (Añadir producto)
+Administrador -- (Eliminar producto)
+Administrador -- (Actualizar producto)
+
+}
+
+@enduml
+
+
+
+' GESTION DE PAGOS
+@startuml
+left to right direction
+
+actor Cliente
+actor "Sistema de Pago"
+
+rectangle "Modulo Gestion de Pagos" {
+
+(Pagar pedido)
+(Procesar pago)
+(Generar factura)
+
+Cliente -- (Pagar pedido)
+
+(Pagar pedido) ..> (Procesar pago) : <<include>>
+
+"Sistema de Pago" -- (Procesar pago)
+
+(Procesar pago) ..> (Generar factura) : <<include>>
+
+}
+
+@enduml
+
+
+
+' LOGGER DEL SISTEMA
+@startuml
+left to right direction
+
+actor Sistema
+actor Administrador
+
+rectangle "Modulo Logger" {
+
+(Registrar accion del sistema)
+(Registrar error del sistema)
+(Consultar registros)
+(Exportar registros)
+
+Sistema -- (Registrar accion del sistema)
+Sistema -- (Registrar error del sistema)
+
+Administrador -- (Consultar registros)
+Administrador -- (Exportar registros)
+
+}
+
+@enduml
