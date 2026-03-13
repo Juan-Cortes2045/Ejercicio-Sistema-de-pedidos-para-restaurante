@@ -8,6 +8,8 @@ package Commad;
  *
  * @author MERARI URBANO
  */
-public class ICommand {
-    
+public interface ICommand {
+    void execute();
+    void undo();
+    String getDescription();
 }
