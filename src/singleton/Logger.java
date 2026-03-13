@@ -4,11 +4,6 @@
  */
 package Singleton;
 import Dominio.LogEntry;
-
-/**
- *
- * @author Maicol
- */
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,9 +39,10 @@ public void warning(String message) {
 log(message, LogLevel.WARNING);
 }
 
-public void error(String message) {
-log(message, LogLevel.ERROR);
-}
+    // Added for compatibility with existing calls to Logger.warn()
+    public void warn(String message) {
+        warning(message);
+    }
 
 public List<LogEntry> getLogs() {
 return logs;
