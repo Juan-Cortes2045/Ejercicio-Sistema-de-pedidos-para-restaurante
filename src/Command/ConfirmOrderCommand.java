@@ -1,13 +1,9 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-package Commad;
+package Command;
 
-/**
- *
- * @author MERARI URBANO
- */
+import Singleton.Logger;
+import Singleton.Order;
+import Dominio.OrderStatus;
+
 public class ConfirmOrderCommand implements ICommand {
 
     private final Order order;

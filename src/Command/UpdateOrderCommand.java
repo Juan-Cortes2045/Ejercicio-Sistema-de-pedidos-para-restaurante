@@ -2,9 +2,13 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package Commad;
+package Command;
 import java.util.ArrayList;
 import java.util.List;
+import Singleton.OrderItem;
+import Dominio.Order;
+import Singleton.Logger;
+
 /**
  *
  * @author MERARI URBANO

@@ -1,13 +1,10 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-package Commad;
+package Command;
 
-/**
- *
- * @author MERARI URBANO
- */
+import Dominio.Order;
+import Dominio.OrderItem;
+import Dominio.Product;
+import Singleton.Logger;
+
 public class AddProductCommand implements ICommand {
 
     private final Order order;

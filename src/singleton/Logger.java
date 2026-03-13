@@ -2,7 +2,8 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package com.maicol.restaurant.singleton;
+package Singleton;
+import Dominio.LogEntry;
 
 /**
  *
@@ -14,8 +15,8 @@ import java.util.List;
 public class Logger {
 
 private static Logger instance;
-private List<LogEntry> logs;
-private LogLevel level;
+private final List<LogEntry> logs;
+private final LogLevel level;
 
 private Logger() {
 logs = new ArrayList<>();

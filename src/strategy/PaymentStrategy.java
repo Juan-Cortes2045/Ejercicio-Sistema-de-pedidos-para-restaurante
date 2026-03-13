@@ -1,9 +1,8 @@
-/**
-*   strategy interface
-*/
-package strategy;
-
+package Strategy;
 
 public interface PaymentStrategy {
-    void processPayment();
+    boolean pay(double amount);
+    String getMethodName();
+    boolean validate(double amount);
+    String generateReceipt();
 }

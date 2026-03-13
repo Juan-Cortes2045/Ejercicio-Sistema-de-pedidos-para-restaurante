@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package Commad;
+package Command;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -16,7 +16,6 @@ import java.util.List;
 public class CommandInvoker {
 
     private final Deque<ICommand> history = new ArrayDeque<>();
-    private final Deque<ICommand> pending = new ArrayDeque<>();
 
     public void executeCommand(ICommand cmd) {
         cmd.execute();

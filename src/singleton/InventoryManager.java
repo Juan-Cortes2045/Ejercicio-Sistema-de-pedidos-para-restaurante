@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package com.maicol.restaurant.singleton;
+package Singleton;
 
 /**
  *
@@ -14,7 +14,7 @@ import java.util.Map;
 public class InventoryManager {
 
 private static InventoryManager instance;
-private Map<String, InventoryItem> inventory;
+private final Map<String, InventoryItem> inventory;
 
     private InventoryManager() {
         inventory = new HashMap<>();

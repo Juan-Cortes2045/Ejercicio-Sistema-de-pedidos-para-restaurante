@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package com.maicol.restaurant.singleton;
+package Singleton;
 
 /**
  *
@@ -12,10 +12,12 @@ package com.maicol.restaurant.singleton;
 import java.util.HashMap;
 import java.util.Map;
 
+import Dominio.Order;
+
 public class OrderManager {
 
     private static OrderManager instance;
-    private Map<String, Order> orders;
+    private final Map<String, Order> orders;
 
     private OrderManager() {
         orders = new HashMap<>();
@@ -28,9 +30,15 @@ public class OrderManager {
         return instance;
     }
 
-    public void createOrder(Order order) {
+    public Order createOrder() {
+        Order order = new Order();
         orders.put(order.getOrderId(), order);
         Logger.getInstance().info("Order created: " + order.getOrderId());
+        return order;
+    }
+
+    public Map<String, Order> getOrders() {
+        return orders;
     }
 
     public Order getOrder(String id) {

@@ -1,21 +1,20 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-package Commad;
+package Command;
 
-/**
- *
- * @author MERARI URBANO
- */
+import Singleton.Logger;
+import Singleton.Order;
+import Dominio.Bill;
+import Dominio.OrderStatus;
+import Strategy.PaymentContext;
+import Strategy.PaymentStrategy;
+
 public class PayOrderCommand implements ICommand {
 
     private final Order order;
-    private final IPaymentStrategy paymentStrategy;
-    private Invoice invoice;
+    private final PaymentStrategy paymentStrategy;
+    private Bill bill;
     private OrderStatus previousStatus;
 
-    public PayOrderCommand(Order order, IPaymentStrategy paymentStrategy) {
+    public PayOrderCommand(Order order, PaymentStrategy paymentStrategy) {
         this.order = order;
         this.paymentStrategy = paymentStrategy;
     }
@@ -29,8 +28,8 @@ public class PayOrderCommand implements ICommand {
         boolean success = context.executePayment();
         if (success) {
             order.setStatus(OrderStatus.PAID);
-            invoice = new Invoice(order);
-            invoice.generate();
+            bill = new Bill(order);
+            bill.generate();
             Logger.getInstance().info("Payment successful: " + order.getOrderId());
         } else {
             Logger.getInstance().error("Payment failed: " + order.getOrderId());
@@ -40,7 +39,7 @@ public class PayOrderCommand implements ICommand {
     @Override
     public void undo() {
         order.setStatus(previousStatus);
-        invoice = null;
+        bill = null;
         Logger.getInstance().warning("Payment reversed: " + order.getOrderId());
     }
 
