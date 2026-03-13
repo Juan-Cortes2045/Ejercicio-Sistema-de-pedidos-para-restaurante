@@ -1,7 +1,7 @@
 package Command;
 
+import Dominio.Order;
 import Singleton.Logger;
-import Singleton.Order;
 import Singleton.OrderManager;
 
 public class CreateOrderCommand implements ICommand {
@@ -30,5 +30,9 @@ public class CreateOrderCommand implements ICommand {
     @Override
     public String getDescription() {
         return "Create new order";
+    }
+
+    public Order getCreatedOrder() {
+        return createdOrder;
     }
 }

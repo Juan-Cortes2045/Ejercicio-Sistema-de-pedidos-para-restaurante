@@ -3,7 +3,6 @@ package Dominio;
 import java.time.LocalDateTime;
 
 import Singleton.InvoiceType;
-import Singleton.Order;
 
 public class Bill {
 

@@ -11,6 +11,8 @@ package Singleton;
 import java.util.HashMap;
 import java.util.Map;
 
+import Dominio.Product;
+
 public class CatalogManager {
 
     private static CatalogManager instance;
@@ -40,5 +42,9 @@ public class CatalogManager {
                 for (Product product : catalog.values()) {
                 System.out.println(product);
             }
+        }
+
+        public Map<String, Product> getProducts() {
+            return new HashMap<>(catalog);
         }
 }

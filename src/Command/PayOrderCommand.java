@@ -1,8 +1,8 @@
 package Command;
 
 import Singleton.Logger;
-import Singleton.Order;
 import Dominio.Bill;
+import Dominio.Order;
 import Dominio.OrderStatus;
 import Strategy.PaymentContext;
 import Strategy.PaymentStrategy;
@@ -32,7 +32,7 @@ public class PayOrderCommand implements ICommand {
             bill.generate();
             Logger.getInstance().info("Payment successful: " + order.getOrderId());
         } else {
-            Logger.getInstance().error("Payment failed: " + order.getOrderId());
+            Logger.getInstance().info("Payment failed: " + order.getOrderId());
         }
     }
 

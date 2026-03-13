@@ -1,7 +1,8 @@
 package Singleton;
 
 import java.time.LocalDateTime;
-import Singleton.Product;
+
+import Dominio.Product;
 
 public class InventoryItem {
 

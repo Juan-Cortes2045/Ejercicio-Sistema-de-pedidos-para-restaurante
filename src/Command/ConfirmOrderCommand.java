@@ -1,7 +1,7 @@
 package Command;
 
 import Singleton.Logger;
-import Singleton.Order;
+import Dominio.Order;
 import Dominio.OrderStatus;
 
 public class ConfirmOrderCommand implements ICommand {

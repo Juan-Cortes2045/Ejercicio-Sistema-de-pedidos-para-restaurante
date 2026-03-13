@@ -1,8 +1,8 @@
 package Command;
 
+import Dominio.Order;
+import Dominio.OrderItem;
 import Singleton.Logger;
-import Singleton.Order;
-import Singleton.OrderItem;
 
 public class RemoveProductCommand implements ICommand {
 

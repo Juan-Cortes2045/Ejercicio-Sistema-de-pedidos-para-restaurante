@@ -32,6 +32,25 @@ private final Map<String, InventoryItem> inventory;
         Logger.getInstance().info("Product added to inventory: " + id);
     }
 
+    public void removeProduct(String id) {
+        if (inventory.containsKey(id)) {
+            inventory.remove(id);
+            Logger.getInstance().info("Product removed from inventory: " + id);
+        } else {
+            Logger.getInstance().warn("Product not found in inventory: " + id);
+        }
+    }
+
+    public void updateStock(String id, int newQuantity) {
+        InventoryItem item = inventory.get(id);
+        if (item != null) {
+            item.increase(newQuantity - item.getQuantity());  // adjust to new quantity
+            Logger.getInstance().info("Stock updated for product: " + id + " to " + newQuantity);
+        } else {
+            Logger.getInstance().warn("Product not found in inventory: " + id);
+        }
+    }
+
     public InventoryItem getProduct(String id) {
         return inventory.get(id);
     }
@@ -40,5 +59,9 @@ private final Map<String, InventoryItem> inventory;
         for (InventoryItem item : inventory.values()) {
             System.out.println(item);
         }
+    }
+
+    public Map<String, InventoryItem> getInventory() {
+        return new HashMap<>(inventory);
     }
 }

@@ -1,6 +1,6 @@
 package Strategy;
 
-import Singleton.Order;
+import Dominio.Order;
 
 public class PaymentContext {
 
@@ -13,6 +13,10 @@ public class PaymentContext {
 
     public void setStrategy(PaymentStrategy strategy) {
         this.strategy = strategy;
+    }
+
+    public PaymentStrategy getStrategy() {
+        return strategy;
     }
 
     public boolean executePayment() {
